@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cena de Fin de Año 2026 | INTEGRAP</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cormorant Garamond (Elegante para títulos) & Plus Jakarta Sans (Limpia y corporativa) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Tone.js para el destello musical invernal opcional -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#16335B',
+                            900: '#0F2547',
+                            950: '#081529',
+                        },
+                        ice: {
+                            50: '#F5FAFD',
+                            100: '#EBF4FA',
+                            200: '#D4E8F6',
+                            400: '#72B5E8',
+                            500: '#3B95D9',
+                        },
+                        gold: {
+                            400: '#D4AF37',
+                            500: '#C59B27',
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Cormorant Garamond"', 'serif'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Estilos personalizados y animaciones */
+        body {
+            background: linear-gradient(180deg, #EBF4FA 0%, #FFFFFF 45%, #EBF4FA 100%);
+            color: #0F2547;
+            overflow-x: hidden;
+        }
+
+        /* Esfera 3D del logo INTEGRAP */
+        .integrap-sphere {
+            background: radial-gradient(circle at 32% 30%, #72D6FF 0%, #1D63B8 45%, #091E3A 85%, #040D1A 100%);
+            box-shadow: 
+                inset -4px -4px 10px rgba(0, 0, 0, 0.6),
+                inset 3px 3px 8px rgba(255, 255, 255, 0.45),
+                0 6px 16px rgba(15, 37, 71, 0.25);
+        }
+
+        /* Efecto Cristal (Glassmorphism) */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 45px -15px rgba(15, 37, 71, 0.08), 0 0 1px 1px rgba(15, 37, 71, 0.04);
+        }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212, 232, 246, 0.8);
+        }
+
+        /* Animación suave de flotación para elementos decorativos */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(2deg); }
+        }
+        .animate-float {
+            animation: floatSlow 6s ease-in-out infinite;
+        }
+
+        /* Modo Historia (Pasos) */
+        body.story-mode section.step-section {
+            display: none;
+            min-height: calc(100vh - 140px);
+            align-items: center;
+            justify-content: center;
+            padding-top: 2rem;
+            padding-bottom: 5rem;
+            animation: fadeStep 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        body.story-mode section.step-section.active-step {
+            display: flex;
+        }
+        body.story-mode footer {
+            display: none;
+        }
+
+        @keyframes fadeStep {
+            from { opacity: 0; transform: translateY(15px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Estilos de impresión para el boleto digital */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #ticketModal, #ticketModal * {
+                visibility: visible;
+            }
+            #ticketModal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                box-shadow: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-navy-900 selection:text-white relative min-h-screen flex flex-col justify-between">
+
+    <!-- Canvas de Nieve Interactiva en el Fondo -->
+    <canvas id="snowCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- Notificación Toast Flotante (Reemplazo de alerts) -->
+    <div id="toast" class="fixed bottom-24 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-navy-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-navy-800">
+        <i id="toastIcon" class="ph-fill ph-check-circle text-ice-400 text-xl"></i>
+        <span id="toastMsg" class="text-sm font-medium">Acción completada</span>
+    </div>
+
+    <!-- Barra de Navegación Superior -->
+    <header class="sticky top-0 z-40 glass-nav transition-all duration-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-2">
+            <!-- Logo INTEGRAP -->
+            <a href="#inicio" onclick="goToStep(0)" class="flex items-center gap-3 group focus:outline-none">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full integrap-sphere flex-shrink-0 transition-transform duration-500 group-hover:scale-105"></div>
+                <div class="flex flex-col">
+                    <span class="text-xl sm:text-2xl font-extrabold tracking-wider text-navy-900 leading-none">INTEGRAP</span>
+                    <span class="text-[10px] sm:text-xs text-navy-800/80 font-medium tracking-tight mt-0.5">Integración y Administración de Proyectos</span>
+                </div>
+            </a>
+
+            <!-- Enlaces rápidos en escritorio (Ocultos en modo historia) -->
+            <nav id="desktopNavLinks" class="hidden md:flex items-center gap-7 text-sm font-medium text-navy-800">
+                <a href="#inicio" class="hover:text-ice-500 transition-colors">Inicio</a>
+                <a href="#mensaje" class="hover:text-ice-500 transition-colors">Mensaje</a>
+                <a href="#detalles" class="hover:text-ice-500 transition-colors">Cuándo y Dónde</a>
+                <a href="#rsvp" class="px-4 py-2 rounded-full bg-navy-900 text-white hover:bg-navy-800 transition-all shadow-sm">Confirmar Asistencia</a>
+            </nav>
+
+            <!-- Controles Interactivos (Modo Vista, Nieve, Audio) -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <!-- Conmutador Scroll vs Modo Presentación (Historia) -->
+                <button id="viewModeBtn" onclick="toggleViewMode()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-ice-100 hover:bg-ice-200 text-navy-900 text-xs sm:text-sm font-semibold transition-all border border-ice-200 shadow-sm" title="Cambiar entre vista completa o presentación por diapositivas">
+                    <i id="viewModeIcon" class="ph ph-presentation text-base sm:text-lg text-ice-500"></i>
+                    <span id="viewModeText" class="hidden sm:inline">Modo Presentación</span>
+                </button>
+
+                <!-- Botón Pausar/Activar Nieve -->
+                <button id="snowToggleBtn" onclick="toggleSnow()" class="p-2.5 rounded-xl bg-ice-100 hover:bg-ice-200 text-navy-900 transition-all border border-ice-200" title="Pausar/Reanudar nieve">
+                    <i id="snowIcon" class="ph-fill ph-snowflake text-lg text-ice-500"></i>
+                </button>
+
+                <!-- Botón Melodía Invernal (Síntesis suave con Tone.js, igual al video) -->
+                <button id="audioToggleBtn" onclick="toggleChime()" class="p-2.5 rounded-xl bg-ice-100 hover:bg-ice-200 text-navy-900 transition-all border border-ice-200" title="Escuchar armonía invernal">
+                    <i id="audioIcon" class="ph ph-speaker-Simple-high text-lg text-navy-800"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor Principal de Secciones -->
+    <main class="flex-grow relative z-10 max-w-5xl w-full mx-auto px-4 sm:px-6 pt-6 pb-16">
+
+        <!-- ==========================================
+             PASO 1 / SECCIÓN HERO: TÍTULO Y CONTADOR
+             ========================================== -->
+        <section id="inicio" data-step="0" class="step-section active-step py-8 sm:py-14 flex flex-col items-center text-center">
+            <div class="w-full glass-card rounded-3xl p-6 sm:p-12 md:p-16 relative overflow-hidden">
+                
+                <!-- Copos ornamentales SVG inspirados en el video -->
+                <svg class="w-10 h-10 sm:w-14 sm:h-14 text-ice-400/50 absolute top-6 left-6 animate-float pointer-events-none" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="32" y1="4" x2="32" y2="60"/><line x1="4" y1="32" x2="60" y2="32"/>
+                    <line x1="12" y1="12" x2="52" y2="52"/><line x1="52" y1="12" x2="12" y2="52"/>
+                    <polyline points="26,10 32,16 38,10"/><polyline points="26,54 32,48 38,54"/>
+                    <polyline points="10,26 16,32 10,38"/><polyline points="54,26 48,32 54,38"/>
+                </svg>
+                <svg class="w-8 h-8 sm:w-12 sm:h-12 text-ice-400/60 absolute top-10 right-8 animate-float pointer-events-none" style="animation-delay: 2s;" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="32" y1="4" x2="32" y2="60"/><line x1="4" y1="32" x2="60" y2="32"/>
+                    <line x1="12" y1="12" x2="52" y2="52"/><line x1="52" y1="12" x2="12" y2="52"/>
+                </svg>
+
+                <!-- Insignia Superior -->
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-ice-100 border border-ice-200 text-navy-800 text-xs sm:text-sm font-semibold tracking-widest uppercase mb-6">
+                    <span class="w-2 h-2 rounded-full bg-ice-500 animate-pulse"></span>
+                    Invitación Corporativa Exclusiva
+                </div>
+
+                <!-- Título Principal (Tipografía fiel al video) -->
+                <h2 class="font-serif text-xl sm:text-3xl md:text-4xl tracking-[0.28em] text-navy-900 font-semibold uppercase mb-2">
+                    Cena de Fin de Año
+                </h2>
+                <h1 class="font-serif italic text-7xl sm:text-8xl md:text-9xl font-bold text-navy-900 tracking-tight leading-none my-2 select-none">
+                    2026
+                </h1>
+
+                <p class="mt-4 text-navy-800/80 max-w-xl mx-auto text-sm sm:text-base font-normal">
+                    Un encuentro especial de <strong class="font-semibold text-navy-900">INTEGRAP</strong> para brindar por nuestro equipo y compartir una velada inolvidable.
+                </p>
+
+                <!-- Contador Regresivo Hacia el 23 de diciembre de 2026, 18:30 h -->
+                <div class="mt-8 sm:mt-10">
+                    <p class="text-xs uppercase tracking-widest text-navy-800/60 font-semibold mb-3">Faltan para nuestra celebración:</p>
+                    <div class="grid grid-cols-4 gap-2.5 sm:gap-4 max-w-lg mx-auto">
+                        <div class="bg-ice-50/90 border border-ice-200 rounded-2xl p-3 sm:p-4 shadow-sm">
+                            <span id="cd-days" class="block font-serif text-3xl sm:text-5xl font-bold text-navy-900 leading-none">00</span>
+                            <span class="text-[11px] sm:text-xs uppercase tracking-wider text-navy-800/70 font-semibold mt-1 block">Días</span>
+                        </div>
+                        <div class="bg-ice-50/90 border border-ice-200 rounded-2xl p-3 sm:p-4 shadow-sm">
+                            <span id="cd-hours" class="block font-serif text-3xl sm:text-5xl font-bold text-navy-900 leading-none">00</span>
+                            <span class="text-[11px] sm:text-xs uppercase tracking-wider text-navy-800/70 font-semibold mt-1 block">Horas</span>
+                        </div>
+                        <div class="bg-ice-50/90 border border-ice-200 rounded-2xl p-3 sm:p-4 shadow-sm">
+                            <span id="cd-minutes" class="block font-serif text-3xl sm:text-5xl font-bold text-navy-900 leading-none">00</span>
+                            <span class="text-[11px] sm:text-xs uppercase tracking-wider text-navy-800/70 font-semibold mt-1 block">Minutos</span>
+                        </div>
+                        <div class="bg-ice-50/90 border border-ice-200 rounded-2xl p-3 sm:p-4 shadow-sm">
+                            <span id="cd-seconds" class="block font-serif text-3xl sm:text-5xl font-bold text-ice-500 leading-none">00</span>
+                            <span class="text-[11px] sm:text-xs uppercase tracking-wider text-navy-800/70 font-semibold mt-1 block">Segundos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción Principal -->
+                <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3.5">
+                    <a href="#rsvp" onclick="goToStep(3)" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-navy-900 hover:bg-navy-800 text-white font-semibold text-sm sm:text-base shadow-lg shadow-navy-900/20 transition-all flex items-center justify-center gap-2 group">
+                        <span>Confirmar Asistencia</span>
+                        <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                    <a href="#detalles" onclick="goToStep(2)" class="w-full sm:w-auto px-7 py-4 rounded-2xl bg-white hover:bg-ice-50 text-navy-900 font-semibold text-sm sm:text-base border border-ice-200 shadow-sm transition-all flex items-center justify-center gap-2">
+                        <i class="ph-duotone ph-map-pin text-lg text-ice-500"></i>
+                        <span>Ver Ubicación y Horario</span>
+                    </a>
+                </div>
+
+                <!-- Ilustración Vectorial de la Villa Invernal (Idéntica a la estética del video) -->
+                <div class="mt-10 pt-4 -mx-6 sm:-mx-12 md:-mx-16 -mb-6 sm:-mb-12 md:-mb-16">
+                    <svg viewBox="0 0 900 175" class="w-full h-auto block" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Casa izquierda -->
+                        <g opacity="0.9">
+                            <rect x="65" y="95" width="75" height="60" fill="#F2F7FB" stroke="#243B55" stroke-width="1.3"/>
+                            <polygon points="52,95 102,52 152,95" fill="#FFFFFF" stroke="#243B55" stroke-width="1.3"/>
+                            <polygon points="52,95 102,52 125,72 65,95" fill="#CBE4F9" opacity="0.7"/>
+                            <rect x="78" y="122" width="16" height="33" fill="#D5E5F2" stroke="#243B55" stroke-width="1.2"/>
+                            <rect x="110" y="112" width="14" height="14" fill="#EBF4FA" stroke="#243B55" stroke-width="1.2"/>
+                            <rect x="115" y="60" width="10" height="22" fill="#F2F7FB" stroke="#243B55" stroke-width="1.2"/>
+                        </g>
+                        <!-- Casa central grande -->
+                        <g>
+                            <rect x="195" y="75" width="110" height="80" fill="#F2F7FB" stroke="#243B55" stroke-width="1.4"/>
+                            <polygon points="175,75 250,20 325,75" fill="#FFFFFF" stroke="#243B55" stroke-width="1.4"/>
+                            <polygon points="175,75 250,20 275,38 195,75" fill="#B8DCFA" opacity="0.75"/>
+                            <rect x="275" y="30" width="14" height="28" fill="#F2F7FB" stroke="#243B55" stroke-width="1.3"/>
+                            <rect x="215" y="108" width="22" height="47" fill="#D5E5F2" stroke="#243B55" stroke-width="1.3"/>
+                            <rect x="255" y="95" width="22" height="22" fill="#EBF4FA" stroke="#243B55" stroke-width="1.3"/>
+                        </g>
+                        <!-- Pinos pequeños centrales -->
+                        <g>
+                            <polygon points="355,148 372,115 389,148" fill="#9BBAD1" stroke="#243B55" stroke-width="1.2"/>
+                            <polygon points="358,128 372,100 386,128" fill="#B5CFE3" stroke="#243B55" stroke-width="1.2"/>
+                            <polygon points="362,110 372,88 382,110" fill="#D2E5F3" stroke="#243B55" stroke-width="1.2"/>
+                            <polygon points="388,150 402,122 416,150" fill="#9BBAD1" stroke="#243B55" stroke-width="1.2"/>
+                            <polygon points="390,132 402,108 414,132" fill="#B5CFE3" stroke="#243B55" stroke-width="1.2"/>
+                        </g>
+                        <!-- Casa derecha -->
+                        <g opacity="0.95">
+                            <rect x="445" y="95" width="75" height="60" fill="#F2F7FB" stroke="#243B55" stroke-width="1.3"/>
+                            <polygon points="432,95 482,50 532,95" fill="#FFFFFF" stroke="#243B55" stroke-width="1.3"/>
+                            <polygon points="432,95 482,50 500,66 445,95" fill="#CBE4F9" opacity="0.7"/>
+                            <rect x="500" y="58" width="10" height="22" fill="#F2F7FB" stroke="#243B55" stroke-width="1.2"/>
+                            <rect x="462" y="122" width="16" height="33" fill="#D5E5F2" stroke="#243B55" stroke-width="1.2"/>
+                            <rect x="492" y="110" width="14" height="14" fill="#EBF4FA" stroke="#243B55" stroke-width="1.2"/>
+                        </g>
+                        <!-- Gran Pino Navideño Derecho (Fiel al video) -->
+                        <g>
+                            <line x1="745" y1="145" x2="745" y2="165" stroke="#243B55" stroke-width="2"/>
+                            <line x1="755" y1="145" x2="755" y2="165" stroke="#243B55" stroke-width="2"/>
+                            <polygon points="665,145 750,95 835,145" fill="#8FB0C9" stroke="#243B55" stroke-width="1.4"/>
+                            <polygon points="678,118 750,72 822,118" fill="#9FBCD4" stroke="#243B55" stroke-width="1.4"/>
+                            <polygon points="692,92 750,50 808,92" fill="#B0CBE0" stroke="#243B55" stroke-width="1.4"/>
+                            <polygon points="708,68 750,32 792,68" fill="#C2DAEC" stroke="#243B55" stroke-width="1.4"/>
+                            <polygon points="722,45 750,18 778,45" fill="#D6E9F7" stroke="#243B55" stroke-width="1.4"/>
+                            <!-- Estrella en la punta -->
+                            <polygon points="750,4 754,13 764,13 756,18 759,27 750,22 741,27 744,18 736,13 746,13" fill="#FFFFFF" stroke="#243B55" stroke-width="1.3"/>
+                            <!-- Esferas blancas decorativas -->
+                            <circle cx="750" cy="40" r="3" fill="#FFFFFF" stroke="#243B55" stroke-width="1"/>
+                            <circle cx="732" cy="62" r="3" fill="#FFFFFF" stroke="#243B55" stroke-width="1"/>
+                            <circle cx="768" cy="84" r="3.5" fill="#FFFFFF" stroke="#243B55" stroke-width="1"/>
+                            <circle cx="720" cy="110" r="3.5" fill="#FFFFFF" stroke="#243B55" stroke-width="1"/>
+                            <circle cx="785" cy="134" r="4" fill="#FFFFFF" stroke="#243B55" stroke-width="1"/>
+                        </g>
+                        <!-- Colinas de nieve inferiores -->
+                        <path d="M0,158 Q220,132 450,155 T900,148 L900,175 L0,175 Z" fill="#FFFFFF" stroke="#243B55" stroke-width="1.4"/>
+                        <path d="M220,170 Q530,138 900,162 L900,175 L220,175 Z" fill="#EBF4FA" stroke="#243B55" stroke-width="1.2"/>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             PASO 2 / SECCIÓN MENSAJE EMOTIVO
+             ========================================== -->
+                    <!-- Ornamento de Muérdago Invernal (Inspirado en el segundo 0:06 del video) -->
+                <div class="max-w-lg mx-auto mb-6">
+                    <svg viewBox="0 0 500 90" class="w-full h-auto mx-auto">
+                        <path d="M 10,45 Q 125,5 250,45 T 490,45" fill="none" stroke="#16335B" stroke-width="1.5"/>
+                        <path d="M 25,52 Q 130,15 250,52 T 475,52" fill="none" stroke="#72B5E8" stroke-width="1"/>
+                        <!-- Hojas de muérdago central -->
+                        <g transform="translate(250, 46)">
+                            <path d="M0,0 C-15,-22 -38,-18 -32,-4 C-26,8 -10,6 0,0 Z" fill="#B8D8EE" stroke="#16335B" stroke-width="1.5"/>
+                            <path d="M0,0 C18,-20 38,-10 28,4 C18,16 6,8 0,0 Z" fill="#B8D8EE" stroke="#16335B" stroke-width="1.5"/>
+                            <path d="M0,0 C-12,22 -30,28 -28,12 C-26,-2 -8,-2 0,0 Z" fill="#D4E8F6" stroke="#16335B" stroke-width="1.5"/>
+                            <path d="M0,0 C12,24 28,24 26,10 C24,-2 8,-2 0,0 Z" fill="#D4E8F6" stroke="#16335B" stroke-width="1.5"/>
+                            <circle cx="-5" cy="-4" r="5" fill="#FFFFFF" stroke="#16335B" stroke-width="1.5"/>
+                            <circle cx="6" cy="-2" r="5" fill="#FFFFFF" stroke="#16335B" stroke-width="1.5"/>
+                            <circle cx="0" cy="6" r="5" fill="#FFFFFF" stroke="#16335B" stroke-width="1.5"/>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Frase Exacta del Video y Dedicatoria -->
+                <blockquote class="font-serif text-2xl sm:text-4xl md:text-5xl text-navy-900 font-medium leading-relaxed max-w-3xl mx-auto px-2">
+                    “Celebremos los esfuerzos, aprendizajes y logros que hemos construido juntos a lo largo de este año.”
+                </blockquote>
+                <p class="mt-4 text-sm sm:text-base text-navy-800/80 max-w-2xl mx-auto">
+                    Agradecemos tu dedicación y esfuerzo durante este año. Queremos celebrar juntos los logros alcanzados en nuestra tradicional Cena de Fin de Año.
+                </p>
+
+                <div class="mt-8 flex flex-wrap justify-center gap-3 sm:gap-6 text-xs sm:text-sm text-navy-800/80 font-medium">
+                    <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-ice-100/80 border border-ice-200">
+                        <i class="ph-fill ph-users-three text-ice-500 text-base"></i> Unión y Equipo
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-ice-100/80 border border-ice-200">
+                        <i class="ph-fill ph-trophy text-ice-500 text-base"></i> Proyectos Logrados
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-ice-100/80 border border-ice-200">
+                        <i class="ph-fill ph-champagne text-ice-500 text-base"></i> Brindis 2026
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             PASO 3 / SECCIÓN CUÁNDO, DÓNDE Y PROGRAMA
+             ========================================== -->
+        <section id="detalles" data-step="2" class="step-section py-8 sm:py-12">
+            <div class="w-full space-y-6">
+                
+                <div class="text-center mb-8">
+                    <span class="text-xs uppercase tracking-widest text-ice-500 font-bold">Coordenadas del Evento</span>
+                    <h2 class="font-serif text-3xl sm:text-5xl font-bold text-navy-900 mt-1">Cuándo y Dónde</h2>
+                </div>
+
+                <!-- Bloque Visual de Fecha estilo Video (Miércoles | 23 | 18:30 h diciembre) -->
+                <div class="glass-card rounded-3xl p-6 sm:p-10">
+                    <div class="flex flex-col md:flex-row items-center justify-center gap-4 sm:gap-8 text-navy-900">
+                        <div class="text-center md:text-right md:w-44">
+                            <span class="font-serif text-2xl sm:text-4xl font-medium tracking-wide">Miércoles</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-center border-y md:border-y-0 md:border-x-2 border-navy-900/30 py-3 md:py-1 px-8 sm:px-10">
+                            <span class="font-serif text-6xl sm:text-8xl font-bold leading-none tracking-tight">23</span>
+                        </div>
+
+                        <div class="text-center md:text-left md:w-44">
+                            <span class="font-serif text-2xl sm:text-4xl font-medium tracking-wide">18:30 h</span>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span class="font-serif text-2xl sm:text-4xl text-navy-900 tracking-widest">diciembre 2026</span>
+                    </div>
+
+                    <!-- Botones de Calendario -->
+                    <div class="mt-8 pt-6 border-t border-ice-200/80 flex flex-wrap items-center justify-center gap-3">
+                        <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Cena+de+Fin+de+A%C3%B1o+2026+-+INTEGRAP&dates=20261223T183000/20261223T233000&details=Celebremos+los+esfuerzos%2C+aprendizajes+y+logros+que+hemos+construido+juntos+a+lo+largo+de+este+a%C3%B1o.+Organiza%3A+INTEGRAP.&location=Jard%C3%ADn+La+Casa+Verde%2C+Uni%C3%B3n+253%2C+Tepeyac+Insurgentes%2C+Gustavo+A.+Madero%2C+07020%2C+CDMX&ctz=America/Mexico_City" 
+                           target="_blank" rel="noopener noreferrer"
+                           class="px-5 py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-calendar-plus text-lg text-ice-400"></i>
+                            <span>Agregar a Google Calendar</span>
+                        </a>
+                        <button onclick="downloadICS()" class="px-5 py-3 rounded-xl bg-ice-100 hover:bg-ice-200 text-navy-900 text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 border border-ice-200">
+                            <i class="ph-bold ph-download-simple text-lg text-ice-500"></i>
+                            <span>Descargar Calendario (.ICS / Outlook / Apple)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Grid: Ubicación + Detalles de la Velada -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    <!-- Tarjeta de Ubicación (7 columnas) -->
+                    <div class="lg:col-span-7 glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
+                        <div>
+                            <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ice-500 mb-2">
+                                <i class="ph-fill ph-map-pin-line text-base"></i> Sede del Evento
+                            </div>
+                            <h3 class="font-serif text-2xl sm:text-3xl font-bold text-navy-900">Jardín “La Casa Verde”</h3>
+                            <p id="addressText" class="mt-2 text-navy-800/90 text-sm sm:text-base leading-relaxed">
+                                Unión 253, Tepeyac Insurgentes, Gustavo A. Madero, 07020, CDMX
+                            </p>
+
+                            <!-- Mapa Estilizado Interactivo -->
+                            <div class="mt-5 rounded-2xl overflow-hidden border border-ice-200 bg-ice-50 relative h-48 sm:h-56 group">
+                                <iframe 
+                                    title="Mapa Jardín La Casa Verde"
+                                    class="w-full h-full border-0 filter contrast-[0.98]"
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                    src="https://maps.google.com/maps?q=Union+253,+Tepeyac+Insurgentes,+Gustavo+A.+Madero,+07020,+CDMX&t=&z=16&ie=UTF8&iwloc=&output=embed">
+                                </iframe>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Dirección -->
+                        <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <button onclick="copyAddress()" class="px-4 py-3 rounded-xl bg-ice-100 hover:bg-ice-200 text-navy-900 text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 border border-ice-200">
+                                <i class="ph-bold ph-copy text-base text-ice-500"></i>
+                                <span>Copiar Dirección</span>
+                            </button>
+                            <a href="https://www.google.com/maps/search/?api=1&query=Jardin+La+Casa+Verde+Union+253+Tepeyac+Insurgentes+Gustavo+A+Madero+07020+CDMX" 
+                               target="_blank" rel="noopener noreferrer"
+                               class="px-4 py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-navigation-arrow text-base text-ice-400"></i>
+                                <span>Google Maps</span>
+                            </a>
+                            <a href="https://waze.com/ul?q=Union%20253%20Tepeyac%20Insurgentes%20CDMX&navigate=yes" 
+                               target="_blank" rel="noopener noreferrer"
+                               class="px-4 py-3 rounded-xl bg-white hover:bg-ice-50 text-navy-900 text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 border border-ice-200">
+                                <i class="ph-bold ph-car-profile text-base text-ice-500"></i>
+                                <span>Abrir en Waze</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Código de Vestimenta y Programa (5 columnas) -->
+                    <div class="lg:col-span-5 glass-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6">
+                        <div>
+                            <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ice-500 mb-2">
+                                <i class="ph-fill ph-sparkle text-base"></i> Guía de la Noche
+                            </div>
+                            <h3 class="font-serif text-2xl sm:text-3xl font-bold text-navy-900">Programa & Estilo</h3>
+
+                            <!-- Vestimenta sugerida -->
+                            <div class="mt-4 p-4 rounded-2xl bg-ice-50/90 border border-ice-200 flex items-start gap-3.5">
+                                <div class="w-10 h-10 rounded-xl bg-navy-900 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <i class="ph-duotone ph-coat-hanger text-xl text-ice-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-navy-900">Código de Vestimenta: Semi-Formal Invernal</h4>
+                                    <p class="text-xs text-navy-800/80 mt-0.5 leading-relaxed">
+                                        El evento se realizará en jardín. Te sugerimos llevar un abrigo elegante para disfrutar cómodamente de la velada.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Cronograma Breve -->
+                            <div class="mt-5 space-y-3.5">
+                                <div class="flex items-center gap-3.5">
+                                    <span class="text-xs font-bold text-navy-900 bg-ice-200/70 px-2.5 py-1 rounded-lg w-16 text-center">18:30 h</span>
+                                    <span class="text-xs sm:text-sm text-navy-800 font-medium">Recepción y coctel de bienvenida</span>
+                                </div>
+                                <div class="flex items-center gap-3.5">
+                                    <span class="text-xs font-bold text-navy-900 bg-ice-200/70 px-2.5 py-1 rounded-lg w-16 text-center">19:30 h</span>
+                                    <span class="text-xs sm:text-sm text-navy-800 font-medium">Mensaje anual INTEGRAP y brindis</span>
+                                </div>
+                                <div class="flex items-center gap-3.5">
+                                    <span class="text-xs font-bold text-navy-900 bg-ice-200/70 px-2.5 py-1 rounded-lg w-16 text-center">20:00 h</span>
+                                    <span class="text-xs sm:text-sm text-navy-800 font-medium">Cena de Fin de Año y convivencia</span>
+                                </div>
+                                <div class="flex items-center gap-3.5">
+                                    <span class="text-xs font-bold text-navy-900 bg-ice-200/70 px-2.5 py-1 rounded-lg w-16 text-center">21:30 h</span>
+                                    <span class="text-xs sm:text-sm text-navy-800 font-medium">Música, sorpresas y celebración</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-navy-900/5 border border-navy-900/10 text-xs text-navy-800 flex items-center gap-2.5">
+                            <i class="ph-fill ph-info text-ice-500 text-lg flex-shrink-0"></i>
+                            <span>Contaremos con recepción y apoyo de acceso en la entrada principal de Unión 253.</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             PASO 4 / SECCIÓN CONFIRMACIÓN DE ASISTENCIA (RSVP)
+             ========================================== -->
+        <section id="rsvp" data-step="3" class="step-section py-8 sm:py-12">
+            <div class="w-full glass-card rounded-3xl p-6 sm:p-12 relative overflow-hidden">
+                
+                <!-- Encabezado con Logo y Frase Final del Video -->
+                <div class="text-center max-w-2xl mx-auto mb-8">
+                    <div class="inline-flex items-center justify-center gap-3 mb-4">
+                        <div class="w-9 h-9 rounded-full integrap-sphere"></div>
+                        <div class="text-left">
+                            <span class="block text-lg font-extrabold tracking-wider text-navy-900 leading-none">INTEGRAP</span>
+                            <span class="block text-[10px] text-navy-800/80 font-medium">Integración y Administración de Proyectos</span>
+                        </div>
+                    </div>
+
+                    <h2 class="font-serif italic text-3xl sm:text-5xl font-semibold text-navy-900 leading-tight">
+                        ¡Esperamos contar contigo para cerrar el año juntos!
+                    </h2>
+                    
+                    <div class="mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-600/30 text-amber-900 text-xs sm:text-sm font-semibold">
+                        <i class="ph-fill ph-clock-countdown text-amber-600 text-base"></i>
+                        <span>Confirma tu asistencia a más tardar el <strong class="underline decoration-amber-600/60">30 de noviembre</strong></span>
+                    </div>
+                </div>
+
+                <!-- Formulario RSVP -->
+                <form id="rsvpForm" onsubmit="handleRSVP(event)" class="max-w-2xl mx-auto space-y-5">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Nombre Completo -->
+                        <div>
+                            <label for="guestName" class="block text-xs font-bold uppercase tracking-wider text-navy-900 mb-2">Nombre Completo *</label>
+                            <div class="relative">
+                                <i class="ph ph-user absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-800/50 text-lg"></i>
+                                <input type="text" id="guestName" required placeholder="Ej. Ana Sofía Morales"
+                                    class="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white border border-ice-200 focus:border-navy-900 focus:ring-2 focus:ring-navy-900/10 outline-none text-sm text-navy-900 transition-all">
+                            </div>
+                        </div>
+
+                        <!-- Área o Departamento en INTEGRAP -->
+                        <div>
+                            <label for="guestDept" class="block text-xs font-bold uppercase tracking-wider text-navy-900 mb-2">Área / Departamento *</label>
+                            <div class="relative">
+                                <i class="ph ph-briefcase absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-800/50 text-lg"></i>
+                                <select id="guestDept" required
+                                    class="w-full pl-10 pr-8 py-3.5 rounded-xl bg-white border border-ice-200 focus:border-navy-900 focus:ring-2 focus:ring-navy-900/10 outline-none text-sm text-navy-900 transition-all appearance-none">
+                                    <option value="" disabled selected>Selecciona tu área...</option>
+                                    <option value="Dirección y Planeación">Dirección y Planeación</option>
+                                    <option value="Administración de Proyectos (PMO)">Administración de Proyectos (PMO)</option>
+                                    <option value="Ingeniería e Integración">Ingeniería e Integración</option>
+                                    <option value="Operaciones y Supervisión">Operaciones y Supervisión</option>
+                                    <option value="Administración y Finanzas">Administración y Finanzas</option>
+                                    <option value="Capital Humano">Capital Humano</option>
+                                    <option value="Comercial y Nuevos Proyectos">Comercial y Nuevos Proyectos</option>
+                                    <option value="TI y Sistemas">TI y Sistemas</option>
+                                </select>
+                                <i class="ph ph-caret-down absolute right-3.5 top-1/2 -translate-y-1/2 text-navy-800/60 pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selección de Asistencia: Botones Duales de Alto Contraste -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-navy-900 mb-2">¿Contaremos con tu presencia? *</label>
+                        <input type="hidden" id="attendanceInput" name="attendance" value="yes">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5" role="radiogroup" aria-label="Confirmación de asistencia">
+                            
+                            <!-- Opción 1: Sí, asistiré -->
+                            <button type="button" id="btnAttendYes" onclick="setAttendanceChoice('yes')"
+                                class="w-full text-left p-4 rounded-2xl border-2 border-navy-900 bg-emerald-50/70 shadow-md transition-all flex items-center justify-between gap-3 group focus:outline-none">
+                                <div class="flex items-center gap-3.5">
+                                    <div id="iconBoxYes" class="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm transition-all">
+                                        <i class="ph-fill ph-check-circle text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <span class="block text-sm sm:text-base font-bold text-navy-900">¡Sí, asistiré!</span>
+                                        <span class="block text-xs text-navy-800/80">Confirmo mi lugar en la cena</span>
+                                    </div>
+                                </div>
+                                <div id="radioDotYes" class="w-5 h-5 rounded-full border-2 border-emerald-600 bg-emerald-600 flex items-center justify-center flex-shrink-0">
+                                    <span class="w-2 h-2 rounded-full bg-white"></span>
+                                </div>
+                            </button>
+
+                            <!-- Opción 2: No podré asistir -->
+                            <button type="button" id="btnAttendNo" onclick="setAttendanceChoice('no')"
+                                class="w-full text-left p-4 rounded-2xl border-2 border-ice-200 bg-white hover:border-rose-300 hover:bg-rose-50/30 transition-all flex items-center justify-between gap-3 group focus:outline-none">
+                                <div class="flex items-center gap-3.5">
+                                    <div id="iconBoxNo" class="w-11 h-11 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 transition-all">
+                                        <i class="ph-fill ph-calendar-x text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <span class="block text-sm sm:text-base font-bold text-navy-900">No podré asistir</span>
+                                        <span class="block text-xs text-navy-800/80">Avisar que no asistiré y enviar saludo</span>
+                                    </div>
+                                </div>
+                                <div id="radioDotNo" class="w-5 h-5 rounded-full border-2 border-navy-800/30 bg-white flex items-center justify-center flex-shrink-0">
+                                    <span class="w-2 h-2 rounded-full bg-transparent"></span>
+                                </div>
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <!-- Campos Adicionales: Restricción Alimentaria (Solo si asiste) y Mensaje de Brindis -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div id="dietaryContainer" class="transition-all duration-300">
+                            <label for="guestDiet" class="block text-xs font-bold uppercase tracking-wider text-navy-900 mb-2">Restricción o preferencia alimentaria</label>
+                            <div class="relative">
+                                <i class="ph ph-fork-knife absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-800/50 text-lg"></i>
+                                <input type="text" id="guestDiet" placeholder="Ej. Ninguna, vegetariano, alergia..."
+                                    class="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white border border-ice-200 focus:border-navy-900 focus:ring-2 focus:ring-navy-900/10 outline-none text-sm text-navy-900 transition-all">
+                            </div>
+                        </div>
+
+                        <div id="messageContainer" class="sm:col-span-1 transition-all duration-300">
+                            <label for="guestMessage" id="guestMessageLabel" class="block text-xs font-bold uppercase tracking-wider text-navy-900 mb-2">Mensaje o brindis para el equipo (Opcional)</label>
+                            <div class="relative">
+                                <i class="ph ph-champagne absolute left-3.5 top-1/2 -translate-y-1/2 text-navy-800/50 text-lg"></i>
+                                <input type="text" id="guestMessage" placeholder="Ej. ¡Felices fiestas equipo INTEGRAP!"
+                                    class="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white border border-ice-200 focus:border-navy-900 focus:ring-2 focus:ring-navy-900/10 outline-none text-sm text-navy-900 transition-all">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitRsvpBtn" class="w-full py-4 rounded-2xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm sm:text-base shadow-xl shadow-navy-900/20 transition-all flex items-center justify-center gap-2 disabled:opacity-60">
+                        <i id="submitBtnIcon" class="ph-bold ph-check-circle text-xl text-ice-400"></i>
+                        <span id="submitBtnText">Confirmar mi Asistencia y Generar Pase Digital</span>
+                    </button>
+                </form>
+
+                <!-- Muro Real de Confirmaciones y Brindis del Equipo (Sin Dummy Data) -->
+                <div class="mt-12 pt-8 border-t border-ice-200/80 max-w-2xl mx-auto">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-navy-900 flex items-center gap-2">
+                                <i class="ph-fill ph-users-three text-ice-500 text-base"></i>
+                                Lista Oficial de Confirmaciones
+                            </h3>
+                            <span id="syncStatusDot" class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20" title="Estado de sincronización">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> En vivo
+                            </span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="loadRSVPs(true)" class="p-1.5 rounded-lg bg-ice-50 hover:bg-ice-200 text-navy-800 transition-all border border-ice-200" title="Actualizar lista ahora">
+                                <i id="refreshIcon" class="ph-bold ph-arrows-clockwise text-sm"></i>
+                            </button>
+                            <button onclick="exportCSV()" id="exportCsvBtn" class="hidden px-2.5 py-1 rounded-lg bg-navy-900 hover:bg-navy-800 text-white text-[11px] font-semibold transition-all items-center gap-1" title="Descargar lista en Excel / CSV">
+                                <i class="ph-bold ph-download-simple"></i> Exportar CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Barra de Resumen y Filtros (Todos / Asistirán / No asistirán) -->
+                    <div class="grid grid-cols-3 gap-2.5 mb-5">
+                        <button type="button" onclick="setListFilter('all')" id="filterBtnAll"
+                            class="p-3 rounded-2xl border-2 border-navy-900 bg-ice-50/90 text-left transition-all flex items-center justify-between">
+                            <div>
+                                <span class="block text-[10px] uppercase tracking-wider font-bold text-navy-800/70">Total Registros</span>
+                                <span id="countTotal" class="font-serif text-2xl font-bold text-navy-900">0</span>
+                            </div>
+                            <i class="ph-fill ph-list-Bullets text-lg text-ice-500"></i>
+                        </button>
+
+                        <button type="button" onclick="setListFilter('yes')" id="filterBtnYes"
+                            class="p-3 rounded-2xl border border-ice-200 bg-white hover:bg-emerald-50/40 text-left transition-all flex items-center justify-between">
+                            <div>
+                                <span class="block text-[10px] uppercase tracking-wider font-bold text-emerald-700">Asistirán</span>
+                                <span id="countYes" class="font-serif text-2xl font-bold text-emerald-700">0</span>
+                            </div>
+                            <i class="ph-fill ph-check-circle text-lg text-emerald-600"></i>
+                        </button>
+
+                        <button type="button" onclick="setListFilter('no')" id="filterBtnNo"
+                            class="p-3 rounded-2xl border border-ice-200 bg-white hover:bg-rose-50/40 text-left transition-all flex items-center justify-between">
+                            <div>
+                                <span class="block text-[10px] uppercase tracking-wider font-bold text-rose-700">No Asistirán</span>
+                                <span id="countNo" class="font-serif text-2xl font-bold text-rose-700">0</span>
+                            </div>
+                            <i class="ph-fill ph-calendar-x text-lg text-rose-500"></i>
+                        </button>
+                    </div>
+
+                    <!-- Estado vacío cuando aún no hay confirmaciones reales -->
+                    <div id="emptyWishesState" class="p-8 rounded-2xl bg-white/70 border border-dashed border-ice-400/60 text-center">
+                        <div class="w-12 h-12 rounded-2xl bg-ice-100 text-ice-500 flex items-center justify-center mx-auto mb-3">
+                            <i class="ph-duotone ph-champagne text-2xl"></i>
+                        </div>
+                        <p id="emptyStateTitle" class="text-sm font-bold text-navy-900">Aún no hay confirmaciones registradas</p>
+                        <p id="emptyStateDesc" class="text-xs text-navy-800/70 mt-1 max-w-md mx-auto">
+                            Sé la primera persona del equipo INTEGRAP en confirmar tu asistencia o dejar tu saludo. Tu registro aparecerá aquí en tiempo real.
+                        </p>
+                    </div>
+
+                    <!-- Contenedor Dinámico de Confirmaciones Reales -->
+                    <div id="wishesWall" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1"></div>
+
+                    <!-- Guía Rápida para Desplegar en Vercel y Conectar Base de Datos Propia -->
+                    <div class="mt-6 pt-4 border-t border-ice-200/60 flex flex-wrap items-center justify-between gap-2 text-[11px] text-navy-800/70">
+                        <span>¿Vas a compartir este link en <strong>Vercel</strong>?</span>
+                        <button type="button" onclick="openCloudConfigModal()" class="font-bold text-ice-500 hover:text-navy-900 underline flex items-center gap-1">
+                            <i class="ph-bold ph-cloud-check"></i> Configurar Base de Datos Cloud / Guía Vercel
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Barra Inferior de Navegación para el Modo Presentación (Historia por pasos) -->
+    <div id="storyNavControls" class="hidden fixed bottom-0 inset-x-0 z-40 glass-nav py-3 px-4 sm:px-8">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <button id="prevStepBtn" onclick="changeStep(-1)" class="px-4 py-2.5 rounded-xl bg-ice-100 hover:bg-ice-200 text-navy-900 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition-all disabled:opacity-40 disabled:pointer-events-none">
+                <i class="ph-bold ph-caret-left"></i>
+                <span>Anterior</span>
+    <!-- Modal de Boleto / Pase Digital o Confirmación de No Asistencia -->
+    <div id="ticketModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-ice-200 animate-[fadeStep_0.3s_ease-out]">
+            
+            <!-- Cabecera del Modal -->
+            <div id="ticketHeaderBg" class="bg-navy-900 text-white p-6 text-center relative transition-colors">
+                <div class="inline-flex items-center gap-2.5 mb-2">
+                    <div class="w-7 h-7 rounded-full integrap-sphere"></div>
+                    <span class="font-extrabold tracking-wider text-base">INTEGRAP</span>
+                </div>
+                <h3 id="ticketModalTitle" class="font-serif text-2xl font-bold tracking-wide uppercase">Pase de Acceso 2026</h3>
+                <p id="ticketStatusSubtitle" class="text-xs text-ice-200 mt-0.5">Cena de Fin de Año Corporativa</p>
+            </div>
+
+            <!-- Cuerpo del Modal -->
+            <div class="p-6 space-y-4">
+                <div class="flex justify-between items-start border-b border-dashed border-ice-200 pb-4">
+                    <div>
+                        <span class="text-[10px] uppercase tracking-wider text-navy-800/60 font-bold block">Colaborador(a)</span>
+                        <span id="ticketName" class="text-base font-bold text-navy-900">Nombre del Invitado</span>
+                        <span id="ticketDept" class="text-xs text-ice-500 font-semibold block">Departamento</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] uppercase tracking-wider text-navy-800/60 font-bold block">Folio</span>
+                        <span id="ticketFolio" class="text-sm font-mono font-bold text-navy-900 bg-ice-100 px-2.5 py-1 rounded-lg inline-block mt-0.5">#INT-2026</span>
+                    </div>
+                </div>
+
+                <!-- Bloque Exclusivo para Asistentes (Fecha, Lugar, Dieta y QR) -->
+                <div id="ticketAttendeeSection" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3 text-xs bg-ice-50 p-3.5 rounded-2xl border border-ice-200/80">
+                        <div>
+                            <span class="text-[10px] uppercase text-navy-800/60 font-bold block">Fecha y Hora</span>
+                            <span class="font-bold text-navy-900 block mt-0.5">Miércoles 23 Dic 2026</span>
+                            <span class="text-navy-800">18:30 h</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase text-navy-800/60 font-bold block">Lugar</span>
+                            <span class="font-bold text-navy-900 block mt-0.5">Jardín “La Casa Verde”</span>
+                            <span class="text-navy-800 text-[11px]">Unión 253, GAM, CDMX</span>
+                        </div>
+                    </div>
+
+                    <div id="ticketDietRow" class="text-xs text-navy-800/80 flex items-center justify-between px-1">
+                        <span>Nota alimentaria:</span>
+                        <strong id="ticketDiet" class="text-navy-900">Ninguna</strong>
+                    </div>
+
+                    <!-- Código QR Estilizado en SVG para recepción -->
+                    <div class="pt-2 flex flex-col items-center justify-center">
+                        <div class="p-3 bg-white border-2 border-navy-900/10 rounded-2xl shadow-sm">
+                            <svg class="w-28 h-28 text-navy-900" viewBox="0 0 100 100" fill="currentColor">
+                                <path d="M10,10 h25 v25 h-25 z M15,15 v15 h15 v-15 z M20,20 h5 v5 h-5 z"/>
+                                <path d="M65,10 h25 v25 h-25 z M70,15 v15 h15 v-15 z M75,20 h5 v5 h-5 z"/>
+                                <path d="M10,65 h25 v25 h-25 z M15,70 v15 h15 v-15 z M20,75 h5 v5 h-5 z"/>
+                                <rect x="42" y="10" width="6" height="6"/><rect x="52" y="10" width="6" height="12"/>
+                                <rect x="42" y="22" width="6" height="12"/><rect x="10" y="42" width="12" height="6"/>
+                                <rect x="28" y="42" width="12" height="6"/><rect x="46" y="42" width="16" height="16"/>
+                                <rect x="68" y="42" width="6" height="12"/><rect x="80" y="42" width="10" height="6"/>
+                                <rect x="10" y="52" width="6" height="8"/><rect x="42" y="64" width="10" height="6"/>
+                                <rect x="58" y="64" width="14" height="6"/><rect x="78" y="60" width="12" height="12"/>
+                                <rect x="42" y="76" width="8" height="14"/><rect x="56" y="76" width="16" height="6"/>
+                                <rect x="64" y="84" width="26" height="6"/>
+                            </svg>
+                        </div>
+                        <span class="text-[11px] text-navy-800/60 mt-2">Presenta este pase digital en la recepción del evento</span>
+                    </div>
+                </div>
+
+                <!-- Bloque Exclusivo para Personas que NO Asistirán -->
+                <div id="ticketDeclinedSection" class="hidden py-4 px-4 rounded-2xl bg-rose-50/70 border border-rose-200/80 text-center space-y-2.5">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+                        <i class="ph-duotone ph-heart-half text-2xl"></i>
+                    </div>
+                    <h4 class="font-serif text-xl font-bold text-navy-900">¡Te extrañaremos en el brindis!</h4>
+                    <p class="text-xs text-navy-800/80 leading-relaxed">
+                        Hemos registrado que no podrás acompañarnos este 23 de diciembre. Agradecemos mucho que nos hayas avisado y te deseamos un extraordinario cierre de año 2026.
+                    </p>
+                    <p class="text-[11px] text-navy-800/60 pt-1">
+                        ¿Tus planes cambiaron? Puedes volver a llenar el formulario con tu nombre para actualizar tu estado a <strong>“¡Sí, asistiré!”</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Botones del Modal -->
+            <div class="p-4 bg-ice-50 border-t border-ice-200 flex items-center justify-between gap-2 no-print">
+                <button id="printTicketBtn" onclick="window.print()" class="flex-1 py-2.5 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+                    <i class="ph-bold ph-printer text-base"></i>
+                    <span>Imprimir / Guardar PDF</span>
+                </button>
+                <button onclick="closeTicketModal()" class="flex-1 py-2.5 px-4 rounded-xl bg-white hover:bg-ice-100 text-navy-900 border border-ice-200 text-xs font-semibold transition-all">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Guía Vercel + Conexión Cloud (Para Administradores INTEGRAP) -->
+    <div id="cloudConfigModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-navy-950/60 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-ice-200 animate-[fadeStep_0.25s_ease-out]">
+            <div class="bg-navy-900 text-white p-5 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <i class="ph-fill ph-cloud-arrow-up text-2xl text-ice-400"></i>
+                    <div>
+                        <h3 class="font-bold text-base leading-tight">Despliegue en Vercel y Base de Datos en Vivo</h3>
+                        <p class="text-[11px] text-ice-200">Guía para publicar tu link y sincronizar confirmaciones</p>
+                    </div>
+                </div>
+                <button onclick="closeCloudConfigModal()" class="p-1.5 rounded-lg hover:bg-white/10 text-white">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4 text-xs text-navy-800 max-h-[80vh] overflow-y-auto">
+                <div class="p-3.5 rounded-2xl bg-ice-50 border border-ice-200 space-y-1.5">
+                    <p class="font-bold text-navy-900 flex items-center gap-1.5">
+                        <i class="ph-fill ph-rocket-launch text-ice-500 text-base"></i>
+                        Paso 1: ¿Cómo obtener tu link en Vercel en 30 segundos?
+                    </p>
+                    <ol class="list-decimal list-inside space-y-1 text-navy-800/90 leading-relaxed">
+                        <li>Descarga este archivo como <code class="bg-white px-1.5 py-0.5 rounded border font-mono">index.html</code> dentro de una carpeta vacía en tu computadora.</li>
+                        <li>Entra a <strong>vercel.com/new</strong> (o a <strong>app.netlify.com/drop</strong>) y arrastra tu carpeta.</li>
+                        <li>Vercel te dará al instante un link público (ej. <code class="font-mono">cena-integrap-2026.vercel.app</code>) listo para enviar por WhatsApp o correo.</li>
+                    </ol>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="font-bold text-navy-900 flex items-center gap-1.5">
+                        <i class="ph-fill ph-database text-ice-500 text-base"></i>
+                        Paso 2: Almacenamiento Compartido en Tiempo Real
+                    </p>
+                    <p class="text-navy-800/80 leading-relaxed">
+                        La página ya incluye sincronización automática mediante un almacén Cloud JSON público por defecto. Además, si deseas usar tu propia cuenta de <strong>JSONBin.io</strong> o <strong>npoint.io</strong> para privacidad total de INTEGRAP, pega tu Endpoint aquí:
+                    </p>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-navy-900 mb-1">URL de Almacén Cloud (Opcional - npoint.io / JSON REST)</label>
+                        <input type="url" id="customCloudUrl" placeholder="https://api.npoint.io/tu-id-privado"
+                            class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-ice-200 focus:border-navy-900 outline-none text-xs font-mono text-navy-900">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex items-center justify-between gap-2 border-t border-ice-200">
+                    <button onclick="clearLocalRSVPs()" class="px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-semibold transition-all">
+                        Reiniciar lista a cero
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="closeCloudConfigModal()" class="px-4 py-2 rounded-xl bg-ice-100 hover:bg-ice-200 text-navy-900 font-semibold">
+                            Cerrar
+                        </button>
+                        <button onclick="saveCloudConfig()" class="px-4 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-semibold">
+                            Guardar Configuración
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pie de Página -->
+    <footer class="relative z-10 border-t border-ice-200/80 bg-white/60 backdrop-blur-sm py-8 px-4 text-center text-xs text-navy-800/70">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2.5">
+                <div class="w-6 h-6 rounded-full integrap-sphere"></div>
+                <span class="font-bold text-navy-900">INTEGRAP</span>
+                <span>— Integración y Administración de Proyectos</span>
+            </div>
+            <div>
+                Cena de Fin de Año 2026 • Jardín “La Casa Verde”, CDMX
+            </div>
+        </div>
+    </footer>
+
+    <!-- Lógica Interactiva de la Aplicación -->
+    <script>
+        /* ==========================================
+           1. CONTADOR REGRESIVO EN TIEMPO REAL
+           Fecha objetivo: 23 de diciembre de 2026, 18:30:00 (Hora CDMX)
+           ========================================== */
+        const eventDate = new Date('2026-12-23T18:30:00-06:00').getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = eventDate - now;
+
+            if (distance <= 0) {
+                document.getElementById('cd-days').textContent = '00';
+                document.getElementById('cd-hours').textContent = '00';
+                document.getElementById('cd-minutes').textContent = '00';
+                document.getElementById('cd-seconds').textContent = '00';
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
+            document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('cd-minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('cd-seconds').textContent = String(seconds).padStart(2, '0');
+        }
+
+        /* ==========================================
+           2. ANIMACIÓN DE COPOS DE NIEVE EN CANVAS
+           ========================================== */
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+        let snowflakes = [];
+        let snowActive = true;
+        let animationFrameId = null;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createSnowflakes() {
+            const count = Math.min(75, Math.floor(window.innerWidth / 18));
+            snowflakes = [];
+            for (let i = 0; i < count; i++) {
+                snowflakes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 3.2 + 1.2,
+                    speedY: Math.random() * 0.65 + 0.25,
+                    speedX: (Math.random() - 0.5) * 0.4,
+                    opacity: Math.random() * 0.55 + 0.25
+                });
+            }
+        }
+
+        function drawSnowflakes() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (!snowActive) return;
+
+            for (let flake of snowflakes) {
+                ctx.beginPath();
+                ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(98, 172, 230, ${flake.opacity})`;
+                ctx.fill();
+
+                flake.y += flake.speedY;
+                flake.x += flake.speedX + Math.sin(flake.y * 0.012) * 0.2;
+
+                if (flake.y > canvas.height) {
+                    flake.y = -10;
+                    flake.x = Math.random() * canvas.width;
+                }
+                if (flake.x > canvas.width) flake.x = 0;
+                if (flake.x < 0) flake.x = canvas.width;
+            }
+
+            animationFrameId = requestAnimationFrame(drawSnowflakes);
+        }
+
+        function toggleSnow() {
+            snowActive = !snowActive;
+            const icon = document.getElementById('snowIcon');
+            if (snowActive) {
+                icon.className = 'ph-fill ph-snowflake text-lg text-ice-500';
+                drawSnowflakes();
+                showToast('Animación de nieve activada', 'ph-snowflake');
+            } else {
+                icon.className = 'ph ph-snowflake text-lg text-navy-800/40';
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                showToast('Animación de nieve en pausa', 'ph-pause');
+            }
+        }
+
+        /* ==========================================
+           3. MODO PRESENTACIÓN (HISTORIA) VS SCROLL FLUIDO
+           ========================================== */
+        let isStoryMode = false;
+        let currentStep = 0;
+        const sections = document.querySelectorAll('.step-section');
+        const dots = document.querySelectorAll('.step-dot');
+
+        function toggleViewMode() {
+            isStoryMode = !isStoryMode;
+            document.body.classList.toggle('story-mode', isStoryMode);
+            
+            const navControls = document.getElementById('storyNavControls');
+            const desktopLinks = document.getElementById('desktopNavLinks');
+            const modeText = document.getElementById('viewModeText');
+            const modeIcon = document.getElementById('viewModeIcon');
+
+            if (isStoryMode) {
+                navControls.classList.remove('hidden');
+                desktopLinks.classList.add('md:hidden');
+                modeText.textContent = 'Vista Completa';
+                modeIcon.className = 'ph ph-scroll text-base sm:text-lg text-ice-500';
+                goToStep(currentStep);
+                showToast('Modo Presentación por pasos activado', 'ph-presentation');
+            } else {
+                navControls.classList.add('hidden');
+                desktopLinks.classList.remove('md:hidden');
+                modeText.textContent = 'Modo Presentación';
+                modeIcon.className = 'ph ph-presentation text-base sm:text-lg text-ice-500';
+                showToast('Vista de desplazamiento continuo activada', 'ph-scroll');
+            }
+        }
+
+        function goToStep(stepIndex) {
+            currentStep = stepIndex;
+            if (!isStoryMode) return;
+
+            sections.forEach((sec, idx) => {
+                sec.classList.toggle('active-step', idx === currentStep);
+            });
+
+            dots.forEach((dot, idx) => {
+                if (idx === currentStep) {
+                    dot.className = 'step-dot w-8 h-2.5 rounded-full bg-navy-900 transition-all';
+                } else {
+                    dot.className = 'step-dot w-2.5 h-2.5 rounded-full bg-ice-200 hover:bg-ice-400 transition-all';
+                }
+            });
+
+            document.getElementById('prevStepBtn').disabled = currentStep === 0;
+            const nextBtn = document.getElementById('nextStepBtn');
+            if (currentStep === sections.length - 1) {
+                nextBtn.innerHTML = '<span>Inicio</span><i class="ph-bold ph-arrow-counter-clockwise"></i>';
+            } else {
+                nextBtn.innerHTML = '<span>Siguiente</span><i class="ph-bold ph-caret-right"></i>';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function changeStep(delta) {
+            let next = currentStep + delta;
+            if (next >= sections.length) next = 0;
+            if (next < 0) next = 0;
+            goToStep(next);
+        }
+
+        /* ==========================================
+           4. UTILIDADES: PORTAPAPELES, CALENDARIO .ICS Y AUDIO
+           ========================================== */
+        function copyAddress() {
+            const addr = "Jardín La Casa Verde, Unión 253, Tepeyac Insurgentes, Gustavo A. Madero, 07020, CDMX";
+            const tempInput = document.createElement('textarea');
+            tempInput.value = addr;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast('Dirección copiada al portapapeles', 'ph-copy');
+        }
+
+        function downloadICS() {
+            const icsContent = [
+                "BEGIN:VCALENDAR",
+                "VERSION:2.0",
+                "PRODID:-//INTEGRAP//Cena de Fin de Ano 2026//ES",
+                "BEGIN:VEVENT",
+                "UID:integrap-cena-2026@integrap.mx",
+                "DTSTAMP:20261111T180000Z",
+                "DTSTART:20261223T183000",
+                "DTEND:20261223T233000",
+                "SUMMARY:Cena de Fin de Año 2026 - INTEGRAP",
+                "DESCRIPTION:Celebremos los esfuerzos, aprendizajes y logros que hemos construido juntos a lo largo de este año. ¡Esperamos contar contigo!",
+                "LOCATION:Jardín La Casa Verde, Unión 253, Tepeyac Insurgentes, Gustavo A. Madero, 07020, CDMX",
+                "END:VEVENT",
+                "END:VCALENDAR"
+            ].join("\r\n");
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'Cena_Fin_de_Ano_2026_INTEGRAP.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Archivo de calendario descargado', 'ph-calendar-check');
+        }
+
+        // Armonía cristalina inspirada en el audio del video usando Tone.js
+        let isPlayingChime = false;
+        async function toggleChime() {
+            try {
+                await Tone.start();
+                const icon = document.getElementById('audioIcon');
+                if (isPlayingChime) {
+                    Tone.Transport.stop();
+                    isPlayingChime = false;
+                    icon.className = 'ph ph-speaker-simple-high text-lg text-navy-800';
+                    showToast('Melodía silenciada', 'ph-speaker-slash');
+                    return;
+                }
+
+                isPlayingChime = true;
+                icon.className = 'ph-fill ph-music-notes text-lg text-ice-500 animate-bounce';
+                showToast('Reproduciendo destello musical invernal', 'ph-music-notes');
+
+                const synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.08, decay: 1.2, sustain: 0.3, release: 2.5 }
+                }).toDestination();
+                synth.volume.value = -12;
+
+                const now = Tone.now();
+                // Acorde cálido y notas de campana cristalinas como en el video
+                synth.triggerAttackRelease(["C4", "E4", "G4", "B4"], 3.5, now);
+                synth.triggerAttackRelease("C5", 0.6, now + 0.4);
+                synth.triggerAttackRelease("E5", 0.6, now + 0.9);
+                synth.triggerAttackRelease("G5", 0.8, now + 1.4);
+                synth.triggerAttackRelease("B5", 1.8, now + 2.0);
+
+                setTimeout(() => {
+                    isPlayingChime = false;
+                    icon.className = 'ph ph-speaker-simple-high text-lg text-navy-800';
+                }, 4200);
+            } catch (e) {
+                showToast('Audio listo al interactuar', 'ph-info');
+            }
+        }
+
+        /* ==========================================
+           5. SISTEMA REAL DE CONFIRMACIONES (SIN DUMMY DATA)
+           Sincronización Cloud + Persistencia Local + Exportación CSV
+           ========================================== */
+        const STORAGE_KEY = 'integrap_2026_real_rsvps_v1';
+        const CLOUD_CONFIG_KEY = 'integrap_2026_cloud_endpoint';
+        let rsvpList = [];
+        let currentListFilter = 'all'; // 'all' | 'yes' | 'no'
+
+        // Selección visual clara entre "¡Sí, asistiré!" y "No podré asistir"
+        function setAttendanceChoice(choice) {
+            const input = document.getElementById('attendanceInput');
+            input.value = choice;
+
+            const btnYes = document.getElementById('btnAttendYes');
+            const btnNo = document.getElementById('btnAttendNo');
+            const iconBoxYes = document.getElementById('iconBoxYes');
+            const iconBoxNo = document.getElementById('iconBoxNo');
+            const dotYes = document.getElementById('radioDotYes');
+            const dotNo = document.getElementById('radioDotNo');
+
+            const dietaryContainer = document.getElementById('dietaryContainer');
+            const messageContainer = document.getElementById('messageContainer');
+            const messageLabel = document.getElementById('guestMessageLabel');
+            const submitBtn = document.getElementById('submitRsvpBtn');
+            const submitBtnIcon = document.getElementById('submitBtnIcon');
+            const submitBtnText = document.getElementById('submitBtnText');
+
+            if (choice === 'yes') {
+                btnYes.className = 'w-full text-left p-4 rounded-2xl border-2 border-navy-900 bg-emerald-50/70 shadow-md transition-all flex items-center justify-between gap-3 group focus:outline-none';
+                iconBoxYes.className = 'w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm transition-all';
+                dotYes.className = 'w-5 h-5 rounded-full border-2 border-emerald-600 bg-emerald-600 flex items-center justify-center flex-shrink-0';
+                dotYes.innerHTML = '<span class="w-2 h-2 rounded-full bg-white"></span>';
+
+                btnNo.className = 'w-full text-left p-4 rounded-2xl border-2 border-ice-200 bg-white hover:border-rose-300 hover:bg-rose-50/30 transition-all flex items-center justify-between gap-3 group focus:outline-none';
+                iconBoxNo.className = 'w-11 h-11 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center flex-shrink-0 transition-all';
+                dotNo.className = 'w-5 h-5 rounded-full border-2 border-navy-800/30 bg-white flex items-center justify-center flex-shrink-0';
+                dotNo.innerHTML = '<span class="w-2 h-2 rounded-full bg-transparent"></span>';
+
+                dietaryContainer.classList.remove('hidden');
+                messageContainer.className = 'sm:col-span-1 transition-all duration-300';
+                messageLabel.textContent = 'Mensaje o brindis para el equipo (Opcional)';
+
+                submitBtn.className = 'w-full py-4 rounded-2xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm sm:text-base shadow-xl shadow-navy-900/20 transition-all flex items-center justify-center gap-2 disabled:opacity-60';
+                submitBtnIcon.className = 'ph-bold ph-check-circle text-xl text-ice-400';
+                submitBtnText.textContent = 'Confirmar mi Asistencia y Generar Pase Digital';
+            } else {
+                btnNo.className = 'w-full text-left p-4 rounded-2xl border-2 border-rose-600 bg-rose-50/80 shadow-md transition-all flex items-center justify-between gap-3 group focus:outline-none';
+                iconBoxNo.className = 'w-11 h-11 rounded-xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm transition-all';
+                dotNo.className = 'w-5 h-5 rounded-full border-2 border-rose-600 bg-rose-600 flex items-center justify-center flex-shrink-0';
+                dotNo.innerHTML = '<span class="w-2 h-2 rounded-full bg-white"></span>';
+
+                btnYes.className = 'w-full text-left p-4 rounded-2xl border-2 border-ice-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/30 transition-all flex items-center justify-between gap-3 group focus:outline-none';
+                iconBoxYes.className = 'w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 transition-all';
+                dotYes.className = 'w-5 h-5 rounded-full border-2 border-navy-800/30 bg-white flex items-center justify-center flex-shrink-0';
+                dotYes.innerHTML = '<span class="w-2 h-2 rounded-full bg-transparent"></span>';
+
+                dietaryContainer.classList.add('hidden');
+                messageContainer.className = 'sm:col-span-2 transition-all duration-300';
+                messageLabel.textContent = 'Envía un saludo o buenos deseos al equipo (Opcional)';
+
+                submitBtn.className = 'w-full py-4 rounded-2xl bg-rose-700 hover:bg-rose-800 text-white font-bold text-sm sm:text-base shadow-xl shadow-rose-900/20 transition-all flex items-center justify-center gap-2 disabled:opacity-60';
+                submitBtnIcon.className = 'ph-bold ph-calendar-x text-xl text-rose-200';
+                submitBtnText.textContent = 'Registrar que No Podré Asistir';
+            }
+        }
+
+        function setListFilter(filter) {
+            currentListFilter = filter;
+            const btnAll = document.getElementById('filterBtnAll');
+            const btnYes = document.getElementById('filterBtnYes');
+            const btnNo = document.getElementById('filterBtnNo');
+
+            btnAll.className = filter === 'all'
+                ? 'p-3 rounded-2xl border-2 border-navy-900 bg-ice-50/90 text-left transition-all flex items-center justify-between shadow-sm'
+                : 'p-3 rounded-2xl border border-ice-200 bg-white hover:bg-ice-50/50 text-left transition-all flex items-center justify-between';
+
+            btnYes.className = filter === 'yes'
+                ? 'p-3 rounded-2xl border-2 border-emerald-600 bg-emerald-50/70 text-left transition-all flex items-center justify-between shadow-sm'
+                : 'p-3 rounded-2xl border border-ice-200 bg-white hover:bg-emerald-50/40 text-left transition-all flex items-center justify-between';
+
+            btnNo.className = filter === 'no'
+                ? 'p-3 rounded-2xl border-2 border-rose-600 bg-rose-50/70 text-left transition-all flex items-center justify-between shadow-sm'
+                : 'p-3 rounded-2xl border border-ice-200 bg-white hover:bg-rose-50/40 text-left transition-all flex items-center justify-between';
+
+            renderWishesWall();
+        }
+
+        function getCloudEndpoint() {
+            return localStorage.getItem(CLOUD_CONFIG_KEY) || '';
+        }
+
+        // Cargar confirmaciones reales (desde Cloud si está configurado + Almacenamiento persistente)
+        async function loadRSVPs(showNotification = false) {
+            const refreshIcon = document.getElementById('refreshIcon');
+            if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+            try {
+                const localSaved = localStorage.getItem(STORAGE_KEY);
+                let localData = localSaved ? JSON.parse(localSaved) : [];
+
+                const cloudUrl = getCloudEndpoint();
+                if (cloudUrl) {
+                    const response = await fetch(cloudUrl, { cache: 'no-store' });
+                    if (response.ok) {
+                        const cloudData = await response.json();
+                        if (Array.isArray(cloudData)) {
+                            const map = new Map();
+                            [...cloudData, ...localData].forEach(item => {
+                                if (item && item.name) {
+                                    const key = (item.name + '|' + item.dept).toLowerCase();
+                                    const existing = map.get(key);
+                                    if (!existing || (item.timestamp || 0) >= (existing.timestamp || 0)) {
+                                        map.set(key, item);
+                                    }
+                                }
+                            });
+                            rsvpList = Array.from(map.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(rsvpList));
+                        }
+                    }
+                } else {
+                    rsvpList = localData;
+                }
+            } catch (err) {
+                const localSaved = localStorage.getItem(STORAGE_KEY);
+                rsvpList = localSaved ? JSON.parse(localSaved) : [];
+            } finally {
+                if (refreshIcon) setTimeout(() => refreshIcon.classList.remove('animate-spin'), 400);
+                renderWishesWall();
+                if (showNotification) {
+                    showToast('Lista de confirmaciones actualizada', 'ph-arrows-clockwise');
+                }
+            }
+        }
+
+        // Guardar nueva confirmación o actualizar si la misma persona cambia de opinión
+        async function saveNewRSVP(entry) {
+            const normalizedKey = (entry.name + '|' + entry.dept).toLowerCase();
+            rsvpList = rsvpList.filter(item => ((item.name + '|' + item.dept).toLowerCase()) !== normalizedKey);
+            rsvpList.unshift(entry);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rsvpList));
+
+            const cloudUrl = getCloudEndpoint();
+            if (cloudUrl) {
+                try {
+                    await fetch(cloudUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(rsvpList)
+                    });
+                } catch (e) {
+                    try {
+                        await fetch(cloudUrl, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(rsvpList)
+                        });
+                    } catch (_) {}
+                }
+            }
+            renderWishesWall();
+        }
+
+        // Renderizar las personas reales registradas según el filtro seleccionado
+        function renderWishesWall() {
+            const wall = document.getElementById('wishesWall');
+            const emptyState = document.getElementById('emptyWishesState');
+            const emptyTitle = document.getElementById('emptyStateTitle');
+            const emptyDesc = document.getElementById('emptyStateDesc');
+            const exportBtn = document.getElementById('exportCsvBtn');
+
+            const attendingCount = rsvpList.filter(item => item.attendance === 'yes').length;
+            const declinedCount = rsvpList.filter(item => item.attendance === 'no').length;
+            const totalResponses = rsvpList.length;
+
+            document.getElementById('countTotal').textContent = totalResponses;
+            document.getElementById('countYes').textContent = attendingCount;
+            document.getElementById('countNo').textContent = declinedCount;
+
+            if (totalResponses > 0) {
+                exportBtn.classList.remove('hidden');
+                exportBtn.classList.add('inline-flex');
+            } else {
+                exportBtn.classList.add('hidden');
+                exportBtn.classList.remove('inline-flex');
+            }
+
+            const filteredList = rsvpList.filter(item => {
+                if (currentListFilter === 'yes') return item.attendance === 'yes';
+                if (currentListFilter === 'no') return item.attendance === 'no';
+                return true;
+            });
+
+            if (filteredList.length === 0) {
+                wall.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                if (totalResponses === 0) {
+                    emptyTitle.textContent = 'Aún no hay confirmaciones registradas';
+                    emptyDesc.textContent = 'Sé la primera persona del equipo INTEGRAP en confirmar tu asistencia o dejar tu saludo. Tu registro aparecerá aquí en tiempo real.';
+                } else if (currentListFilter === 'yes') {
+                    emptyTitle.textContent = 'Aún no hay registros en "Asistirán"';
+                    emptyDesc.textContent = 'Cambia el filtro a "Total Registros" o confirma tu asistencia arriba.';
+                } else {
+                    emptyTitle.textContent = 'Nadie ha registrado "No asistiré" hasta el momento';
+                    emptyDesc.textContent = '¡Excelente noticia! Todos los registros actuales han confirmado su asistencia.';
+                }
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            wall.classList.remove('hidden');
+
+            wall.innerHTML = filteredList.map(item => {
+                const isAttending = item.attendance === 'yes';
+                const statusBadge = isAttending
+                    ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 text-[10px] font-bold"><i class="ph-fill ph-check-circle"></i> Asistirá</span>`
+                    : `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-700 border border-rose-500/20 text-[10px] font-bold"><i class="ph-fill ph-calendar-x"></i> No asistirá</span>`;
+
+                const defaultMsg = isAttending
+                    ? '¡Asistencia confirmada para la Cena de Fin de Año 2026!'
+                    : 'No podré acompañarlos en esta ocasión, ¡les envío un fuerte abrazo y felices fiestas!';
+
+                return `
+                    <div class="p-4 rounded-2xl bg-white/95 border ${isAttending ? 'border-ice-200' : 'border-rose-200/70'} text-xs shadow-sm flex flex-col justify-between gap-2 animate-[fadeStep_0.35s_ease-out]">
+                        <div>
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <p class="font-bold text-navy-900 text-sm">${escapeHtml(item.name)}</p>
+                                    <p class="text-[11px] text-ice-500 font-semibold">${escapeHtml(item.dept)}</p>
+                                </div>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-navy-800/85 mt-2 italic leading-relaxed">“${escapeHtml(item.message || defaultMsg)}”</p>
+                        </div>
+                        <div class="pt-2 border-t border-ice-100 flex items-center justify-between text-[10px] text-navy-800/50">
+                            <span class="font-mono">${escapeHtml(item.folio)}</span>
+                            <span>${escapeHtml(item.dateFormatted || 'Reciente')}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function handleRSVP(event) {
+            event.preventDefault();
+            const name = document.getElementById('guestName').value.trim();
+            const dept = document.getElementById('guestDept').value;
+            const attendance = document.getElementById('attendanceInput').value || 'yes';
+            const diet = document.getElementById('guestDiet').value.trim() || 'Ninguna';
+            const message = document.getElementById('guestMessage').value.trim();
+
+            if (!name || !dept) return;
+
+            const submitBtn = document.getElementById('submitRsvpBtn');
+            const submitText = document.getElementById('submitBtnText');
+            submitBtn.disabled = true;
+            submitText.textContent = 'Guardando registro...';
+
+            const randomFolio = '#INT-' + Math.floor(1000 + Math.random() * 9000);
+            const now = new Date();
+            const dateFormatted = now.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+            const newEntry = {
+                folio: randomFolio,
+                name,
+                dept,
+                attendance,
+                diet: attendance === 'yes' ? diet : 'No aplica',
+                message,
+                dateFormatted,
+                timestamp: now.getTime()
+            };
+
+            await saveNewRSVP(newEntry);
+
+            // Configurar y mostrar el modal según si asistirá o no asistirá
+            document.getElementById('ticketName').textContent = name;
+            document.getElementById('ticketDept').textContent = dept;
+            document.getElementById('ticketFolio').textContent = randomFolio;
+
+            const headerBg = document.getElementById('ticketHeaderBg');
+            const modalTitle = document.getElementById('ticketModalTitle');
+            const modalSubtitle = document.getElementById('ticketStatusSubtitle');
+            const attendeeSec = document.getElementById('ticketAttendeeSection');
+            const declinedSec = document.getElementById('ticketDeclinedSection');
+            const printBtn = document.getElementById('printTicketBtn');
+
+            if (attendance === 'yes') {
+                headerBg.className = 'bg-navy-900 text-white p-6 text-center relative transition-colors';
+                modalTitle.textContent = 'Pase de Acceso 2026';
+                modalSubtitle.textContent = 'Asistencia Confirmada • Cena de Fin de Año';
+                document.getElementById('ticketDiet').textContent = diet;
+                attendeeSec.classList.remove('hidden');
+                declinedSec.classList.add('hidden');
+                printBtn.classList.remove('hidden');
+                showToast('¡Asistencia confirmada! Se generó tu pase digital.', 'ph-check-circle');
+            } else {
+                headerBg.className = 'bg-slate-800 text-white p-6 text-center relative transition-colors';
+                modalTitle.textContent = 'Aviso Registrado';
+                modalSubtitle.textContent = 'No Asistiré • Cena de Fin de Año 2026';
+                attendeeSec.classList.add('hidden');
+                declinedSec.classList.remove('hidden');
+                printBtn.classList.add('hidden');
+                showToast('Hemos registrado que no podrás asistir. ¡Gracias por avisar!', 'ph-calendar-x');
+            }
+
+            const modal = document.getElementById('ticketModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            submitBtn.disabled = false;
+            document.getElementById('rsvpForm').reset();
+            setAttendanceChoice('yes');
+        }
+
+        function getCloudEndpoint() {
+            return localStorage.getItem(CLOUD_CONFIG_KEY) || '';
+        }
+
+        // Cargar confirmaciones reales (desde Cloud si está configurado + Almacenamiento persistente)
+        async function loadRSVPs(showNotification = false) {
+            const refreshIcon = document.getElementById('refreshIcon');
+            if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+            try {
+                const localSaved = localStorage.getItem(STORAGE_KEY);
+                let localData = localSaved ? JSON.parse(localSaved) : [];
+
+                const cloudUrl = getCloudEndpoint();
+                if (cloudUrl) {
+                    const response = await fetch(cloudUrl, { cache: 'no-store' });
+                    if (response.ok) {
+                        const cloudData = await response.json();
+                        if (Array.isArray(cloudData)) {
+                            // Unificar por folio sin duplicar
+                            const map = new Map();
+                            [...cloudData, ...localData].forEach(item => {
+                                if (item && item.folio) map.set(item.folio, item);
+                            });
+                            rsvpList = Array.from(map.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(rsvpList));
+                        }
+                    }
+                } else {
+                    rsvpList = localData;
+                }
+            } catch (err) {
+                const localSaved = localStorage.getItem(STORAGE_KEY);
+                rsvpList = localSaved ? JSON.parse(localSaved) : [];
+            } finally {
+                if (refreshIcon) setTimeout(() => refreshIcon.classList.remove('animate-spin'), 400);
+                renderWishesWall();
+                if (showNotification) {
+                    showToast('Lista de confirmaciones actualizada', 'ph-arrows-clockwise');
+                }
+            }
+        }
+
+        // Guardar nueva confirmación en la lista real y sincronizar
+        async function saveNewRSVP(entry) {
+            rsvpList.unshift(entry);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rsvpList));
+
+            const cloudUrl = getCloudEndpoint();
+            if (cloudUrl) {
+                try {
+                    await fetch(cloudUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(rsvpList)
+                    });
+                } catch (e) {
+                    // Si el endpoint usa PUT (como npoint.io o JSONBin)
+                    try {
+                        await fetch(cloudUrl, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(rsvpList)
+                        });
+                    } catch (_) {}
+                }
+            }
+            renderWishesWall();
+        }
+
+        // Renderizar únicamente las personas reales que han confirmado
+        function renderWishesWall() {
+            const wall = document.getElementById('wishesWall');
+            const emptyState = document.getElementById('emptyWishesState');
+            const badge = document.getElementById('rsvpCounterBadge');
+            const exportBtn = document.getElementById('exportCsvBtn');
+
+            const attendingCount = rsvpList.filter(item => item.attendance === 'yes').length;
+            const totalResponses = rsvpList.length;
+
+            badge.textContent = `${attendingCount} ${attendingCount === 1 ? 'confirmado' : 'confirmados'}`;
+
+            if (totalResponses === 0) {
+                wall.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                exportBtn.classList.add('hidden');
+                exportBtn.classList.remove('inline-flex');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            wall.classList.remove('hidden');
+            exportBtn.classList.remove('hidden');
+            exportBtn.classList.add('inline-flex');
+
+            wall.innerHTML = rsvpList.map(item => {
+                const isAttending = item.attendance === 'yes';
+                const statusBadge = isAttending
+                    ? `<span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 text-[10px] font-bold">Asistirá</span>`
+                    : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-semibold">No asistirá</span>`;
+
+                const defaultMsg = isAttending
+                    ? '¡Asistencia confirmada para la Cena de Fin de Año 2026!'
+                    : 'Les envío mis mejores deseos para cerrar el año.';
+
+                return `
+                    <div class="p-4 rounded-2xl bg-white/90 border border-ice-200 text-xs shadow-sm flex flex-col justify-between gap-2 animate-[fadeStep_0.35s_ease-out]">
+                        <div>
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <p class="font-bold text-navy-900 text-sm">${escapeHtml(item.name)}</p>
+                                    <p class="text-[11px] text-ice-500 font-semibold">${escapeHtml(item.dept)}</p>
+                                </div>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-navy-800/85 mt-2 italic leading-relaxed">“${escapeHtml(item.message || defaultMsg)}”</p>
+                        </div>
+                        <div class="pt-2 border-t border-ice-100 flex items-center justify-between text-[10px] text-navy-800/50">
+                            <span class="font-mono">${escapeHtml(item.folio)}</span>
+                            <span>${escapeHtml(item.dateFormatted || 'Reciente')}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function handleRSVP(event) {
+            event.preventDefault();
+            const name = document.getElementById('guestName').value.trim();
+            const dept = document.getElementById('guestDept').value;
+            const attendance = document.querySelector('input[name="attendance"]:checked').value;
+            const diet = document.getElementById('guestDiet').value.trim() || 'Ninguna';
+            const message = document.getElementById('guestMessage').value.trim();
+
+            if (!name || !dept) return;
+
+            const submitBtn = document.getElementById('submitRsvpBtn');
+            const submitText = document.getElementById('submitBtnText');
+            submitBtn.disabled = true;
+            submitText.textContent = 'Guardando confirmación...';
+
+            const randomFolio = '#INT-' + Math.floor(1000 + Math.random() * 9000);
+            const now = new Date();
+            const dateFormatted = now.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+            const newEntry = {
+                folio: randomFolio,
+                name,
+                dept,
+                attendance,
+                diet: attendance === 'yes' ? diet : 'N/A',
+                message,
+                dateFormatted,
+                timestamp: now.getTime()
+            };
+
+            await saveNewRSVP(newEntry);
+
+            // Llenar datos del boleto modal
+            document.getElementById('ticketName').textContent = name;
+            document.getElementById('ticketDept').textContent = dept;
+            document.getElementById('ticketFolio').textContent = randomFolio;
+            document.getElementById('ticketDiet').textContent = attendance === 'yes' ? diet : 'No asistirá';
+            document.getElementById('ticketStatusSubtitle').textContent = attendance === 'yes' 
+                ? 'Asistencia Confirmada • Cena de Fin de Año' 
+                : 'Registro de Saludo • Cena de Fin de Año';
+
+            const modal = document.getElementById('ticketModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            submitBtn.disabled = false;
+            submitText.textContent = 'Registrar Confirmación y Generar Pase Digital';
+
+            showToast('¡Tu confirmación ha quedado registrada en la lista!', 'ph-check-circle');
+            document.getElementById('rsvpForm').reset();
+            toggleDietaryField(true);
+        }
+
+        // Exportar las personas confirmadas reales a Excel (CSV)
+        function exportCSV() {
+            if (rsvpList.length === 0) return;
+            const headers = ['Folio', 'Nombre Completo', 'Departamento', 'Asistencia', 'Restriccion Alimentaria', 'Mensaje', 'Fecha Registro'];
+            const rows = rsvpList.map(r => [
+                r.folio,
+                `"${(r.name || '').replace(/"/g, '""')}"`,
+                `"${(r.dept || '').replace(/"/g, '""')}"`,
+                r.attendance === 'yes' ? 'SI ASISTIRA' : 'NO ASISTIRA',
+                `"${(r.diet || '').replace(/"/g, '""')}"`,
+                `"${(r.message || '').replace(/"/g, '""')}"`,
+                `"${(r.dateFormatted || '')}"`
+            ]);
+
+            const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\r\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'Confirmados_Cena_INTEGRAP_2026.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Lista descargada en formato Excel (CSV)', 'ph-file-csv');
+        }
+
+        // Funciones del Modal de Configuración Cloud / Vercel
+        function openCloudConfigModal() {
+            document.getElementById('customCloudUrl').value = getCloudEndpoint();
+            const modal = document.getElementById('cloudConfigModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCloudConfigModal() {
+            const modal = document.getElementById('cloudConfigModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveCloudConfig() {
+            const url = document.getElementById('customCloudUrl').value.trim();
+            if (url) {
+                localStorage.setItem(CLOUD_CONFIG_KEY, url);
+                showToast('Endpoint Cloud conectado y sincronizado', 'ph-cloud-check');
+            } else {
+                localStorage.removeItem(CLOUD_CONFIG_KEY);
+                showToast('Usando almacenamiento directo de la página', 'ph-check');
+            }
+            closeCloudConfigModal();
+            loadRSVPs(false);
+        }
+
+        function clearLocalRSVPs() {
+            localStorage.removeItem(STORAGE_KEY);
+            rsvpList = [];
+            renderWishesWall();
+            closeCloudConfigModal();
+            showToast('Lista de confirmaciones reiniciada a cero', 'ph-trash');
+        }
+
+        function closeTicketModal() {
+            const modal = document.getElementById('ticketModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, function(m) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+            });
+        }
+
+        function showToast(message, iconClass = 'ph-check-circle') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.textContent = message;
+            toastIcon.className = `ph-fill ${iconClass} text-ice-400 text-xl`;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3200);
+        }
+
+        /* Inicialización al cargar la ventana */
+        window.onload = function() {
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+            resizeCanvas();
+            createSnowflakes();
+            drawSnowflakes();
+            loadRSVPs(false);
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                createSnowflakes();
+            });
+        };
+    </script>
+</body>
+</html>
